@@ -1,5 +1,5 @@
 from django.db import models
-from owners import Owner
+from owners.models import Owner
 
 class Plot(models.Model):
     plot_number = models.CharField(max_length=50, unique=True, verbose_name="Номер участка")
@@ -20,10 +20,12 @@ class Plot(models.Model):
     def current_owner(self):
         """Получить текущего владельца участка"""
         try:
-            return self.plotowner_set.filter(
+            plot_owner = self.plotowner_set.filter(
                 ownership_end__isnull=True
-            ).latest('ownership_start').owner
-        except:
+            ).order_by('-ownership_start').first()
+            return plot_owner.owner if plot_owner else None
+        except Exception as e:
+            print(f"Ошибка при получении владельца: {e}")
             return None
         
 class PlotOwner(models.Model):

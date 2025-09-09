@@ -1,14 +1,18 @@
 from rest_framework import serializers
 from .models import Owner
-from plots.models import PlotOwner
-from plots.serializers import PlotSerializer
 
-class PlotOwnerHistorySerializer(serializers.ModelSerializer):
-    plot = PlotSerializer(read_only=True)
-    
-    class Meta:
-        model = PlotOwner
-        fields = ['id', 'plot', 'ownership_start', 'ownership_end', 'is_current_owner']
+class PlotSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    plot_number = serializers.CharField()
+    address = serializers.CharField()
+    area = serializers.FloatField()
+
+class PlotOwnerHistorySerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    plot = PlotSerializer()
+    ownership_start = serializers.DateField()
+    ownership_end = serializers.DateField(allow_null=True)
+    is_current_owner = serializers.BooleanField()
 
 class OwnerSerializer(serializers.ModelSerializer):
     plots_history = PlotOwnerHistorySerializer(source='plotowner_set', many=True, read_only=True)

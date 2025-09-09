@@ -1,22 +1,23 @@
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.permissions import AllowAny
 from django.shortcuts import get_object_or_404
-from django.db.models import Prefetch
 from .models import Plot, PlotOwner
 from .serializers import PlotSerializer, PlotDetailSerializer
 from owners.models import Owner
 
 class PlotViewSet(viewsets.ModelViewSet):
-    queryset = Plot.objects.all().select_related('current_owner')
+    queryset = Plot.objects.all()
     serializer_class = PlotSerializer
+    permission_classes = [AllowAny]
 
     def get_serializer_class(self):
         if self.action == 'retrieve':
             return PlotDetailSerializer
         return PlotSerializer
 
-    @action(detail=True, methods=['post'])
+    @action(detail=True, methods=['post'], permission_classes=[AllowAny])
     def add_owner(self, request, pk=None):
         """Добавить владельца участка"""
         plot = self.get_object()
@@ -51,7 +52,7 @@ class PlotViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_404_NOT_FOUND
             )
 
-    @action(detail=False, methods=['get'])
+    @action(detail=False, methods=['get'], permission_classes=[AllowAny])
     def unpaid_plots(self, request):
         """Получить список участков с неоплаченными платежами"""
         from payments.models import Payment
