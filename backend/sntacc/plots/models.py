@@ -24,10 +24,9 @@ class Plot(models.Model):
                 ownership_end__isnull=True
             ).order_by('-ownership_start').first()
             return plot_owner.owner if plot_owner else None
-        except Exception as e:
-            print(f"Ошибка при получении владельца: {e}")
+        except Exception:
             return None
-        
+
 class PlotOwner(models.Model):
     plot = models.ForeignKey(Plot, on_delete=models.CASCADE, verbose_name="Участок")
     owner = models.ForeignKey(Owner, on_delete=models.CASCADE, verbose_name="Собственник")

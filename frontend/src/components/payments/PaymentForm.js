@@ -100,34 +100,46 @@ const PaymentForm = ({ open, onClose, payment, onSuccess, plots, year }) => {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
+  e.preventDefault();
+  setLoading(true);
+  setError('');
 
-    try {
-      const submitData = {
-        ...formData,
-        plot_id: parseInt(formData.plot_id),
-        year: parseInt(formData.year),
-        amount: parseFloat(formData.amount),
-      };
+  try {
+    // Подготавливаем данные для отправки
+    const submitData = {
+      plot_id: parseInt(formData.plot_id),
+      year: parseInt(formData.year),
+      amount: parseFloat(formData.amount),
+      status: formData.status,
+    };
 
-      if (payment) {
-        // Обновление существующего платежа
-        await paymentService.update(payment.id, submitData);
-      } else {
-        // Создание нового платежа
-        await paymentService.create(submitData);
-      }
-      onSuccess();
-      onClose();
-    } catch (err) {
-      setError('Ошибка при сохранении платежа: ' + (err.response?.data?.detail || err.message));
-      console.error(err);
-    } finally {
-      setLoading(false);
+    // Добавляем дату оплаты только если она указана
+    if (formData.date_paid) {
+      submitData.date_paid = formData.date_paid;
     }
-  };
+
+    console.log('Отправляемые данные:', submitData);
+
+    if (payment) {
+      // Обновление существующего платежа
+      await paymentService.update(payment.id, submitData);
+    } else {
+      // Создание нового платежа
+      await paymentService.create(submitData);
+    }
+    onSuccess();
+    onClose();
+  } catch (err) {
+    console.error('Ошибка при сохранении платежа:', err);
+    console.error('Детали ошибки:', err.response?.data);
+    setError('Ошибка при сохранении платежа: ' + 
+      (err.response?.data?.detail || 
+       JSON.stringify(err.response?.data) || 
+       err.message));
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
