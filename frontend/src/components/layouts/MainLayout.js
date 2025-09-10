@@ -16,6 +16,8 @@ import {
   Menu,
   MenuItem,
   Avatar,
+  useMediaQuery,
+  SwipeableDrawer,
 } from '@mui/material';
 import {
   Menu as MenuIcon,
@@ -29,9 +31,14 @@ import {
   ExitToApp as LogoutIcon,
   AccountCircle as AccountIcon,
   Event as EventIcon,
+  Close as CloseIcon,
+  Search as SearchIcon,
+  Task as TaskIcon,
+  Description as DescriptionIcon,
 } from '@mui/icons-material';
 import { Outlet, useNavigate } from 'react-router-dom';
 import { authService } from '../../services/auth';
+import SearchBar from '../search/SearchBar';
 
 const drawerWidth = 240;
 
@@ -40,21 +47,22 @@ const MainLayout = () => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
   const navigate = useNavigate();
+  const isMobile = useMediaQuery('(max-width:600px)');
 
   // Загружаем информацию о текущем пользователе
   useEffect(() => {
     const loadCurrentUser = async () => {
       try {
-        const response = await authService.getCurrentUser();
-        setCurrentUser(response.data);
+        if (authService.isAuthenticated()) {
+          const response = await authService.getCurrentUser();
+          setCurrentUser(response.data);
+        }
       } catch (error) {
         console.error('Ошибка загрузки пользователя:', error);
       }
     };
     
-    if (authService.isAuthenticated()) {
-      loadCurrentUser();
-    }
+    loadCurrentUser();
   }, []);
 
   const handleDrawerToggle = () => {
@@ -82,7 +90,7 @@ const MainLayout = () => {
 
   const menuItems = [
     {
-      text: 'Панель управления',
+      text: 'Панель',
       icon: <DashboardIcon />,
       path: '/'
     },
@@ -107,9 +115,19 @@ const MainLayout = () => {
       path: '/payments'
     },
     {
+      text: 'Задачи',
+      icon: <TaskIcon />,
+      path: '/tasks'
+    },
+    {
       text: 'Уведомления',
       icon: <NotificationsIcon />,
       path: '/notifications'
+    },
+    {
+      text: 'Документы',
+      icon: <DescriptionIcon />,
+      path: '/documents'
     },
     {
       text: 'Отчеты',
@@ -123,33 +141,64 @@ const MainLayout = () => {
     }
   ];
 
-  const drawer = (
-    <div>
+  const drawerContent = (
+    <Box
+      sx={{
+        width: drawerWidth,
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+    >
       <Toolbar>
         <Typography variant="h6" noWrap component="div">
           sntacc
         </Typography>
+        {isMobile && (
+          <IconButton
+            sx={{ ml: 'auto' }}
+            onClick={handleDrawerToggle}
+          >
+            <CloseIcon />
+          </IconButton>
+        )}
       </Toolbar>
       <Divider />
-      <List>
+      <List sx={{ flex: 1 }}>
         {menuItems.map((item) => (
           <ListItem
             button
             key={item.text}
-            onClick={() => navigate(item.path)}
+            onClick={() => {
+              navigate(item.path);
+              if (isMobile) {
+                setMobileOpen(false);
+              }
+            }}
+            sx={{
+              minHeight: 48,
+            }}
           >
-            <ListItemIcon>
+            <ListItemIcon sx={{ minWidth: 40 }}>
               {item.icon}
             </ListItemIcon>
-            <ListItemText primary={item.text} />
+            <ListItemText 
+              primary={item.text} 
+              primaryTypographyProps={{
+                variant: 'body2',
+                sx: {
+                  fontSize: isMobile ? '0.875rem' : 'inherit',
+                }
+              }}
+            />
           </ListItem>
         ))}
       </List>
-    </div>
+    </Box>
   );
 
   return (
-    <Box sx={{ display: 'flex' }}>
+    <Box sx={{ display: 'flex', minHeight: '100vh' }}>
       <CssBaseline />
       
       {/* Верхняя панель */}
@@ -160,13 +209,20 @@ const MainLayout = () => {
           ml: { sm: `${drawerWidth}px` },
         }}
       >
-        <Toolbar>
+        <Toolbar sx={{ 
+          minHeight: 56,
+          px: { xs: 1, sm: 2 }
+        }}>
           <IconButton
             color="inherit"
             aria-label="open drawer"
             edge="start"
             onClick={handleDrawerToggle}
-            sx={{ mr: 2, display: { sm: 'none' } }}
+            sx={{ 
+              mr: 2, 
+              display: { sm: 'none' },
+              padding: '8px'
+            }}
           >
             <MenuIcon />
           </IconButton>
@@ -175,16 +231,34 @@ const MainLayout = () => {
             variant="h6"
             noWrap
             component="div"
-            sx={{ flexGrow: 1 }}
+            sx={{ 
+              flexGrow: 1,
+              fontSize: { xs: '1rem', sm: '1.25rem' }
+            }}
           >
-            Учет платежей СНТ
+            {isMobile ? 'СНТ' : 'Учет платежей СНТ'}
           </Typography>
+          
+          {/* Глобальный поиск */}
+          {!isMobile && (
+            <Box sx={{ mx: 2, width: '300px' }}>
+              <SearchBar />
+            </Box>
+          )}
           
           <IconButton
             color="inherit"
             onClick={handleMenuOpen}
+            sx={{ padding: '8px' }}
           >
-            <Avatar sx={{ width: 32, height: 32, bgcolor: 'secondary.main' }}>
+            <Avatar 
+              sx={{ 
+                width: 32, 
+                height: 32, 
+                bgcolor: 'secondary.main',
+                fontSize: '0.75rem'
+              }}
+            >
               <AccountIcon />
             </Avatar>
           </IconButton>
@@ -193,6 +267,9 @@ const MainLayout = () => {
             anchorEl={anchorEl}
             open={Boolean(anchorEl)}
             onClose={handleMenuClose}
+            sx={{
+              mt: '45px',
+            }}
           >
             <MenuItem onClick={handleProfile}>
               <ListItemIcon>
@@ -202,7 +279,7 @@ const MainLayout = () => {
                 Профиль
                 {currentUser && (
                   <Typography variant="caption" display="block" color="textSecondary">
-                    {currentUser.username}
+                    {isMobile ? currentUser.username.substring(0, 10) + '...' : currentUser.username}
                   </Typography>
                 )}
               </ListItemText>
@@ -212,10 +289,17 @@ const MainLayout = () => {
               <ListItemIcon>
                 <LogoutIcon fontSize="small" />
               </ListItemIcon>
-              <ListItemText>Выйти</ListItemText>
+              <ListItemText>{isMobile ? 'Выйти' : 'Выйти из системы'}</ListItemText>
             </MenuItem>
           </Menu>
         </Toolbar>
+        
+        {/* Поиск для мобильных устройств */}
+        {isMobile && (
+          <Box sx={{ px: 1, pb: 1 }}>
+            <SearchBar />
+          </Box>
+        )}
       </AppBar>
 
       {/* Боковое меню для мобильных устройств */}
@@ -223,32 +307,29 @@ const MainLayout = () => {
         component="nav"
         sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}
       >
-        <Drawer
-          variant="temporary"
-          open={mobileOpen}
+        {/* Для мобильных устройств - свайпаемый drawer */}
+        <SwipeableDrawer
+          variant={isMobile ? "temporary" : "permanent"}
+          open={isMobile ? mobileOpen : true}
           onClose={handleDrawerToggle}
+          onOpen={handleDrawerToggle}
           ModalProps={{
             keepMounted: true,
           }}
           sx={{
-            display: { xs: 'block', sm: 'none' },
-            '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth },
+            display: { xs: 'block' },
+            '& .MuiDrawer-paper': { 
+              boxSizing: 'border-box', 
+              width: drawerWidth,
+              ...(isMobile && {
+                width: '80%',
+                maxWidth: 300,
+              })
+            },
           }}
         >
-          {drawer}
-        </Drawer>
-        
-        {/* Боковое меню для десктопа */}
-        <Drawer
-          variant="permanent"
-          sx={{
-            display: { xs: 'none', sm: 'block' },
-            '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth },
-          }}
-          open
-        >
-          {drawer}
-        </Drawer>
+          {drawerContent}
+        </SwipeableDrawer>
       </Box>
 
       {/* Основной контент */}
@@ -256,12 +337,19 @@ const MainLayout = () => {
         component="main"
         sx={{
           flexGrow: 1,
-          p: 3,
+          p: { xs: 1, sm: 3 },
           width: { sm: `calc(100% - ${drawerWidth}px)` },
-          mt: 8,
+          mt: { xs: 12, sm: 8 }, // Увеличил отступ для мобильных с поиском
+          minHeight: 'calc(100vh - 56px)',
         }}
       >
-        <Container maxWidth="lg">
+        <Container 
+          maxWidth="lg" 
+          sx={{ 
+            px: { xs: 0, sm: 2 },
+            py: { xs: 1, sm: 2 }
+          }}
+        >
           <Outlet />
         </Container>
       </Box>

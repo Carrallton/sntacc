@@ -30,6 +30,11 @@ INSTALLED_APPS = [
     'owners',
     'payments',
     'notifications',
+    'backup',
+    'reports',
+    'audit',
+    'tasks',
+    'documents',
 ]
 
 MIDDLEWARE = [
@@ -41,6 +46,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'audit.middleware.AuditMiddleware',
 ]
 
 ROOT_URLCONF = 'sntacc.urls'

@@ -4,40 +4,72 @@ services:
   db:
     image: postgres:14
     environment:
-      POSTGRES_DB: sntacc_db
-      POSTGRES_USER: sntacc_user
-      POSTGRES_PASSWORD: sntacc_pass
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     volumes:
       - postgres_data:/var/lib/postgresql/data/
-    ports:
-      - "5432:5432"
+    networks:
+      - sntacc_network
+
+  redis:
+    image: redis:7-alpine
+    networks:
+      - sntacc_network
 
   backend:
     build: ./backend
-    command: python manage.py runserver 0.0.0.0:8000
+    command: gunicorn --bind 0.0.0.0:8000 sntacc.wsgi:application
     volumes:
-      - ./backend:/app
-    ports:
-      - "8000:8000"
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
+    environment:
+      - DEBUG=False
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_HOST=db
+      - SECRET_KEY=${SECRET_KEY}
+      - ALLOWED_HOSTS=${ALLOWED_HOSTS}
     depends_on:
       - db
-    environment:
-      - DEBUG=1
-      - DB_NAME=sntacc_db
-      - DB_USER=sntacc_user
-      - DB_PASSWORD=sntacc_pass
-      - DB_HOST=db
-      - DB_PORT=5432
+      - redis
+    networks:
+      - sntacc_network
 
   frontend:
-    build: ./frontend
-    ports:
-      - "3000:3000"
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.prod
     volumes:
-      - ./frontend:/app
-      - /app/node_modules
+      - frontend_build:/app/build
+    networks:
+      - sntacc_network
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
+      - ./nginx/certs:/etc/nginx/certs
+      - ./nginx/logs:/var/log/nginx
     depends_on:
       - backend
+      - frontend
+    networks:
+      - sntacc_network
 
 volumes:
   postgres_data:
+  static_volume:
+  media_volume:
+  frontend_build:
+
+networks:
+  sntacc_network:
+    driver: bridge

@@ -15,4 +15,9 @@ urlpatterns = [
     path('api/', include(router.urls)),
     path('api/auth/', include('accounts.urls')),
     path('api/notifications/', include('notifications.urls')),
+    path('api/backup/', include('backup.urls')),
+    path('api/reports/', include('reports.urls')),
+    path('api/audit/', include('audit.urls')),
+    path('api/tasks/', include('tasks.urls')),
+    path('api/documents/', include('documents.urls')),
 ]

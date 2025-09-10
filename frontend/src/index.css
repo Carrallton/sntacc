@@ -1,13 +1,44 @@
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+@media (max-width: 600px) {
+  .MuiTableCell-root {
+    padding: 8px 4px;
+    font-size: 0.875rem;
+  }
+  
+  .MuiTableHead-root .MuiTableCell-root {
+    font-size: 0.75rem;
+  }
+  
+  .MuiButton-root {
+    min-width: auto;
+    padding: 6px 12px;
+    font-size: 0.875rem;
+  }
+  
+  .MuiCard-root {
+    margin: 8px 0;
+  }
+  
+  .MuiTypography-h4 {
+    font-size: 1.5rem;
+  }
+  
+  .MuiTypography-h5 {
+    font-size: 1.25rem;
+  }
+  
+  .MuiTypography-h6 {
+    font-size: 1.125rem;
+  }
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+@media (max-width: 400px) {
+  .MuiTableCell-root {
+    padding: 6px 2px;
+    font-size: 0.75rem;
+  }
+  
+  .MuiButton-root {
+    padding: 4px 8px;
+    font-size: 0.75rem;
+  }
 }

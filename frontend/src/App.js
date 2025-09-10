@@ -6,13 +6,15 @@ import PlotList from './components/plots/PlotList';
 import OwnerList from './components/owners/OwnerList';
 import PaymentList from './components/payments/PaymentList';
 import Notifications from './components/notifications/Notifications';
-import Reports from './components/reports/Reports';
+import ReportsDashboard from './components/reports/ReportsDashboard';
 import Settings from './components/settings/Settings';
 import Profile from './components/profile/Profile';
 import PaymentCalendar from './components/calendar/PaymentCalendar';
 import Login from './components/auth/Login';
 import Register from './components/auth/Register';
 import { authService } from './services/auth';
+import TaskList from './components/tasks/TaskList';
+import DocumentList from './components/documents/DocumentList';
 
 // Компонент для защищенных маршрутов
 const ProtectedRoute = ({ children }) => {
@@ -47,8 +49,10 @@ function App() {
           <Route path="owners" element={<OwnerList />} />
           <Route path="payments" element={<PaymentList />} />
           <Route path="notifications" element={<Notifications />} />
-          <Route path="reports" element={<Reports />} />
+          <Route path="documents" element={<DocumentList />} />
+          <Route path="reports" element={<ReportsDashboard />} />
           <Route path="settings" element={<Settings />} />
+          <Route path="tasks" element={<TaskList />} />
           <Route path="profile" element={<Profile />} />
           <Route path="calendar" element={<PaymentCalendar />} />
         </Route>
